@@ -5,11 +5,10 @@ import { memoize } from 'lodash';
 const gatewayTools = new IPFSGatewayTools();
 
 export const getIpfsUrl = (sourceUrl) => {
-    return gatewayTools.convertToDesiredGateway(sourceUrl, "https://gateway.pinata.cloud");
+    return gatewayTools.convertToDesiredGateway(sourceUrl, "https:/ipfs.fleek.co");
 }
 
 export const getIpfsJson = memoize(async (sourceUrl) => {
-    console.log("Not Memoized:")
     return (await fetchRetry(
         getIpfsUrl(sourceUrl)
     )).json();

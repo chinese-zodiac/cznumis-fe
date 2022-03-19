@@ -1,5 +1,5 @@
 
-import React, { Component, useEffect } from 'react';
+import React, { Component, useEffect, useState } from 'react';
 import Collapsibles from '../../components/Collapsibles';
 import Web3ModalButton from '../../components/Web3ModalButton';
 import CzfLogo from '../../public/static/assets/images/czflogo.png';
@@ -34,12 +34,16 @@ function BackToTop() {
 
  function Home() {
   const {library,chainId} = useEthers();
+  const [nftMetadata,setNftMetadata] = useState([])
   useEffect(()=>{
-    console.log(chainId);
-    console.log(library);
     if(chainId != 56) return;
-    console.log(chainId);
-    getUstsdMetadata(library);
+    getUstsdMetadata(library,(i,res)=>{
+      setNftMetadata((prevNftMetadata)=>{
+        let newNftMetadata = [...prevNftMetadata]
+        newNftMetadata[i] = res;
+        return newNftMetadata;
+      });
+    });
   },[chainId])
   return (<>
     <section id="top" className="hero is-fullheight has-background-gradient has-text-centered">
@@ -59,21 +63,13 @@ function BackToTop() {
             </div>
             <div className='hero-body p-4'>
               <div className="container">
-                <figure className="image is-256x256 m-2" style={{width:"256px",display:"inline-block"}}>
-                    <img src={getIpfsUrl("ipfs://QmejKCtvL8JSvusTmkUJ3u69e6PYNJsNrsbuVX6XDNqVLS")} />
-                </figure>
-                <figure className="image is-256x256 m-2" style={{width:"256px",display:"inline-block"}}>
-                    <img src={getIpfsUrl("ipfs://QmejKCtvL8JSvusTmkUJ3u69e6PYNJsNrsbuVX6XDNqVLS")} />
-                </figure>
-                <figure className="image is-256x256 m-2" style={{width:"256px",display:"inline-block"}}>
-                    <img src={getIpfsUrl("ipfs://QmejKCtvL8JSvusTmkUJ3u69e6PYNJsNrsbuVX6XDNqVLS")} />
-                </figure>
-                <figure className="image is-256x256 m-2" style={{width:"256px",display:"inline-block"}}>
-                    <img src={getIpfsUrl("ipfs://QmejKCtvL8JSvusTmkUJ3u69e6PYNJsNrsbuVX6XDNqVLS")} />
-                </figure>
-                <figure className="image is-256x256 m-2" style={{width:"256px",display:"inline-block"}}>
-                    <img src={getIpfsUrl("ipfs://QmejKCtvL8JSvusTmkUJ3u69e6PYNJsNrsbuVX6XDNqVLS")} />
-                </figure>
+                {nftMetadata.map((nft,index)=>{
+                  return(<div key={index} className="container" style={{display:"inline-block"}}>
+                  <figure className="image is-256x256 m-2" style={{width:"256px",display:"inline-block"}}>
+                      <img src={getIpfsUrl(nft.image)} />
+                  </figure>
+                  <p>Serial: {nft.serial}<br/>${nft.price.toFixed(2)}<br/>{nft.owner}</p>
+                </div>)})}
               </div>
             </div>
         </div>
@@ -81,7 +77,7 @@ function BackToTop() {
     
     <footer id="footer" className="footer is-dark">
       <div className="content has-text-centered">
-        <p>
+        <div>
           <a className="m-2 mr-4" href={"https://bscscan.com/token/"+CZF} target="_blank">
             <figure className="image is-16x16 is-rounded m-0" style={{display:"inline-block",top:"2px",position:"relative"}}>
                 <img src={CzfLogo} />
@@ -110,31 +106,29 @@ function BackToTop() {
           <a className="m-2" href="https://czodiac.gitbook.io/czodiac-litepapper" target="_blank">
             <span className="icon"><i className="fa-solid fa-book"></i></span>
           </a>
-        </p>
-        <p>
-            <div className="container has-text-centered ">
-                <a className="button is-rounded m-1 is-small" href="https://cz.cash" target="_blank">
-                    <span className="icon">
-                        <i className="fa-solid fa-arrow-right-arrow-left" style={{position:'relative',top:"-0.1em",left:"0.1em"}}></i>
-                    </span>
-                    <span style={{padding:"0"}}>cz.cash</span>
-                </a>
-                <a className="button is-rounded m-1 is-small" href="https://cz.farm" target="_blank">
-                    <span className="icon">
-                        <i className="fa-solid fa-tractor" style={{position:'relative',top:"-0.1em",left:"0.1em"}}></i>
-                    </span>
-                    <span style={{padding:"0"}}>cz.farm</span>
-                </a>
-                <a className="button is-rounded m-1 is-small" href="https://app.czodiac.com" target="_blank">
-                    <span className="icon">
-                        <i className="fa-solid fa-box-archive" style={{position:'relative',top:"-0.1em",left:"0.1em"}}></i>
-                    </span>
-                    <span style={{padding:"0"}}>v1 dapp</span>
-                </a>
-            </div>              
-        </p>
+        </div>
+        <div className="container has-text-centered ">
+            <a className="button is-rounded m-1 is-small" href="https://cz.cash" target="_blank">
+                <span className="icon">
+                    <i className="fa-solid fa-arrow-right-arrow-left" style={{position:'relative',top:"-0.1em",left:"0.1em"}}></i>
+                </span>
+                <span style={{padding:"0"}}>cz.cash</span>
+            </a>
+            <a className="button is-rounded m-1 is-small" href="https://cz.farm" target="_blank">
+                <span className="icon">
+                    <i className="fa-solid fa-tractor" style={{position:'relative',top:"-0.1em",left:"0.1em"}}></i>
+                </span>
+                <span style={{padding:"0"}}>cz.farm</span>
+            </a>
+            <a className="button is-rounded m-1 is-small" href="https://app.czodiac.com" target="_blank">
+                <span className="icon">
+                    <i className="fa-solid fa-box-archive" style={{position:'relative',top:"-0.1em",left:"0.1em"}}></i>
+                </span>
+                <span style={{padding:"0"}}>v1 dapp</span>
+            </a>
+        </div>
         <br/>
-        <p>
+        <div>
           <p>            
           <strong>Prices</strong><br/>
             For convenience, all CZodiac treasury prices are set by its on-chain price oracle fed by <a className='is-underline' href="https://www.pcgs.com/prices/detail/morgan-dollar/744/most-active">PCGS</a>. Coins are not PCGS certified unless identified otherwise.
@@ -146,8 +140,8 @@ function BackToTop() {
           <strong>Legal Disclaimer</strong><br/>
           <span className="is-size-7">
             Nothing on this site or on related channels should be considered a promise by anyone, including but not limited to the developers and promoters of this site, to perform work to generate profits for anyone including but not limited to the following: the users of this site; FairTribe community members; CZF holders; CZUSD holders; or anyone using any of the sites, smart contracts, social media channels, and any other media or tech related to CZF, CZUSD, and CZodiac or any of the community members. CZodiac, CZF, CZUSD, czodiac.com, cz.cash, cz.farm, and related technologies plus media are all experimental and must be used according to your personal financial situation and risk profile. There are no guarantees of profits, but the smart contracts are guaranteed to perform as written on the BSC blockchain.
-            </span>
-          </p>
+          </span>
+        </div>
         <p>
           <strong>Contact</strong><br/>
           team@czodiac.com

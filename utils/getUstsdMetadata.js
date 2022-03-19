@@ -24,17 +24,14 @@ const getUstsdMetadataSingle = memoize(async (id,USTSD,USTSDPriceOracle) => {
         }
     } catch(err) {
         console.log("USTSD",id,"err:",err)
-        return {err:"Failed to load token ID "+id}
+        return {isErr:true,err:"Failed to load token ID "+id}
     }
 });
 
 //NOTE: Only works for nft that starts with id#0 and increments
-export const getUstsdMetadata = ((library) => {
-    console.log("Running getUstsdMetadata...")
-    console.log(library)
-    let result = [];
+//callbacak accepts index, result.
+export const getUstsdMetadata = ((library,cb) => {
     (async ()=>{
-        console.log("Running getUstsdMetadata async...")
         const USTSD = new Contract(
             ADDRESS_USTSD,
             new Interface(USTSDAbi),
@@ -46,11 +43,10 @@ export const getUstsdMetadata = ((library) => {
             library
         );
         const totalSupply = (await USTSD.totalSupply()).toNumber();
-        console.log("Total supply", totalSupply)
         for(let i = 0; i<totalSupply; i++) {
-            result[i] = await getUstsdMetadataSingle(i,USTSD,USTSDPriceOracle);
-            console.log(result)
+            let result = await getUstsdMetadataSingle(i,USTSD,USTSDPriceOracle);
+            cb(i,result)
+            await new Promise(r => setTimeout(r, 500*(Math.random()+0.5)));
         }
-    })()
-    return result;
+    })();
 });
