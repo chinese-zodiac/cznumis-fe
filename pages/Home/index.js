@@ -36,15 +36,16 @@ function BackToTop() {
   const {library,chainId} = useEthers();
   const [nftMetadata,setNftMetadata] = useState([])
   useEffect(()=>{
-    if(chainId != 56) return;
-    getUstsdMetadata(library,(i,res)=>{
+    if(!library) return;
+    let cancel = getUstsdMetadata(library,(i,res)=>{
       setNftMetadata((prevNftMetadata)=>{
         let newNftMetadata = [...prevNftMetadata]
         newNftMetadata[i] = res;
         return newNftMetadata;
       });
     });
-  },[chainId])
+    return ()=>cancel();
+  },[chainId,library])
   return (<>
     <section id="top" className="hero is-fullheight has-background-gradient has-text-centered">
         <div>
@@ -65,10 +66,12 @@ function BackToTop() {
               <div className="container">
                 {nftMetadata.map((nft,index)=>{
                   return(<div key={index} className="container" style={{display:"inline-block"}}>
-                  <figure className="image is-256x256 m-2" style={{width:"256px",display:"inline-block"}}>
-                      <img src={getIpfsUrl(nft.image)} />
-                  </figure>
-                  <p>Serial: {nft.serial}<br/>${nft.price.toFixed(2)}<br/>{nft.owner}</p>
+                  <a href={getIpfsUrl(nft.image,index)} target="_blank">
+                    <figure className="image is-256x256 m-2" style={{width:"256px",display:"inline-block"}}>
+                        <img src={getIpfsUrl(nft.image,index)} />
+                    </figure>
+                  </a>
+                  <p>ID: {index} Serial: {nft.serial}<br/>${nft.price.toFixed(2)}<br/>{shortenAddress(nft.owner)}</p>
                 </div>)})}
               </div>
             </div>

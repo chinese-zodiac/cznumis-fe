@@ -12,7 +12,8 @@ const config = {
   readOnlyChainId: BSC.chainId,
   readOnlyUrls: {
     [BSC.chainId]: 'https://bscrpc.com'
-  }
+  },
+  networks:[BSC]
 }
 
 class MyApp extends App {

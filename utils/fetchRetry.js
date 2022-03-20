@@ -7,7 +7,7 @@ export default async function fetchRetry(url) {
         } catch (err) {
             console.log("Fetch Err: ", err)
         }
-        // Wait 500ms*i between requests
-        await new Promise(r => setTimeout(r, 100*i*(Math.random()+0.5)));
+        // Wait 100ms*i between requests
+        await new Promise(r => setTimeout(r, 250*i*(Math.random()+0.5)));
     }
 }
