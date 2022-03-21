@@ -6,7 +6,8 @@ const gatewayTools = new IPFSGatewayTools();
 const gateways = [
     "https://ipfs.fleek.co",
     "https://cloudflare-ipfs.com",
-    //"https://ipfs.azurewebsites.net",
+    "https://czodiac.mypinata.cloud",
+    "https://gateway.ipfs.io"
 ]
 
 export const getIpfsUrl = (sourceUrl,cycle=0) => {

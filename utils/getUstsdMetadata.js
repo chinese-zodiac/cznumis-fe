@@ -59,8 +59,10 @@ export const getUstsdMetadata = ((library,cb) => {
                 getUstsdMetadataSingle.cache.delete(i);
                 i--;
             } else{
+                result.id = i;
+                console.log(result)
                 cb(i,result)
-                await new Promise(r => setTimeout(r, 50*(Math.random()+0.5)));
+                await new Promise(r => setTimeout(r, 150*(Math.random()+0.5)));
             }
             if(isCanceled) break;
         }

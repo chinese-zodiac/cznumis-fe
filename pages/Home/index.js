@@ -10,6 +10,7 @@ import {getIpfsUrl} from '../../utils/getIpfsJson';
 import {getUstsdMetadata} from '../../utils/getUstsdMetadata';
 import { useEthers, shortenAddress, useLookupAddress, useChainMeta, useChainState  } from '@usedapp/core'
 import { get } from 'lodash';
+import { utils } from 'ethers'
 const CZUSD = "0xE68b79e51bf826534Ff37AA9CeE71a3842ee9c70";
 const CZF = "0x7c1608C004F20c3520f70b924E2BfeF092dA0043";
 const CZF_CZUSD_LP = "0x98b5f5e7ec32cda1f3e89936c9972f92296afe47";
@@ -33,8 +34,10 @@ function BackToTop() {
 }
 
  function Home() {
-  const {library,chainId} = useEthers();
+  const {account,library,chainId} = useEthers();
   const [nftMetadata,setNftMetadata] = useState([])
+  const [loadingNftId,setLoadingNftId] = useState(0);
+  const [viewWallet,setViewWallet] = useState("");
   useEffect(()=>{
     if(!library) return;
     let cancel = getUstsdMetadata(library,(i,res)=>{
@@ -43,6 +46,7 @@ function BackToTop() {
         newNftMetadata[i] = res;
         return newNftMetadata;
       });
+      setLoadingNftId(i);
     });
     return ()=>cancel();
   },[chainId,library])
@@ -64,14 +68,32 @@ function BackToTop() {
             </div>
             <div className='hero-body p-4'>
               <div className="container">
-                {nftMetadata.map((nft,index)=>{
-                  return(<div key={index} className="container" style={{display:"inline-block"}}>
+                <div className="container">
+                  <input class="input" type="text" style={{textAlign:"left",fontFamily:"monospace",maxWidth:"27em"}} placeholder={account} value={viewWallet} onChange={
+                    (event)=>{
+                      let val = event.target.value;
+                      if(utils.isAddress(val)) setViewWallet(val);
+                    }
+                  }/><br/>
+                  <div class="buttons has-addons mt-3 has-text-centered" style={{display:"inline-block"}}>
+                  <button className="button is-primary is-rounded is-outlined " onClick={()=>setViewWallet("0x70e1cB759996a1527eD1801B169621C18a9f38F9")}>View Reserves</button>
+                  <button className="button is-primary is-rounded is-outlined " onClick={()=>setViewWallet(account)}>View Yours</button>
+                  <button className="button is-primary is-rounded is-outlined " onClick={()=>setViewWallet("")}>View All</button>
+                  </div><br/>
+                </div>
+                <p>
+                  USTSD Loaded: {loadingNftId+1}
+                </p>
+                {nftMetadata.filter(nft=> !viewWallet ? true : viewWallet.toUpperCase()==nft.owner.toUpperCase()).map((nft,index)=>{
+                  return(<div key={index} className="container m-2" 
+                  style={{display:"inline-block",border:"solid #9c968a",background:"white"}}
+                  >
                   <a href={getIpfsUrl(nft.image,index)} target="_blank">
                     <figure className="image is-256x256 m-2" style={{width:"256px",display:"inline-block"}}>
                         <img src={getIpfsUrl(nft.image,index)} />
                     </figure>
                   </a>
-                  <p>ID: {index} Serial: {nft.serial}<br/>${nft.price.toFixed(2)}<br/>{shortenAddress(nft.owner)}</p>
+                  <p className="has-text-left pl-4 pb-2 is-size-7" > ${nft.price.toFixed(2)} SN:{nft.serial} (#{nft.id}) <span className='is-underlined' style={{cursor:"pointer"}} onClick={()=>setViewWallet(nft.owner)}>{shortenAddress(nft.owner)}</span></p>
                 </div>)})}
               </div>
             </div>
