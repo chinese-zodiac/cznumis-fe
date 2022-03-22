@@ -93,7 +93,7 @@ function BackToTop() {
                         <img src={getIpfsUrl(nft.image,index)} />
                     </figure>
                   </a>
-                  <p className="has-text-left pl-4 pb-2 is-size-7" > ${nft.price.toFixed(2)} SN:{nft.serial} (#{nft.id}) <span className='is-underlined' style={{cursor:"pointer"}} onClick={()=>setViewWallet(nft.owner)}>{shortenAddress(nft.owner)}</span></p>
+                  <p className="has-text-left pl-4 pb-2 is-size-7" > ${(nft.price+0.99).toFixed(2)} SN:{nft.serial} <span className='is-underlined' style={{cursor:"pointer"}} onClick={()=>setViewWallet(nft.owner)}>{shortenAddress(nft.owner)}</span></p>
                 </div>)})}
               </div>
             </div>
