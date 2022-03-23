@@ -69,13 +69,13 @@ function BackToTop() {
             <div className='hero-body p-4'>
               <div className="container">
                 <div className="container">
-                  <input class="input" type="text" style={{textAlign:"left",fontFamily:"monospace",maxWidth:"27em"}} placeholder={account} value={viewWallet} onChange={
+                  <input className="input" type="text" style={{textAlign:"left",fontFamily:"monospace",maxWidth:"27em"}} placeholder={account} value={viewWallet} onChange={
                     (event)=>{
                       let val = event.target.value;
                       if(utils.isAddress(val)) setViewWallet(val);
                     }
                   }/><br/>
-                  <div class="buttons has-addons mt-3 has-text-centered" style={{display:"inline-block"}}>
+                  <div className="buttons has-addons mt-3 has-text-centered" style={{display:"inline-block"}}>
                   <button className="button is-primary is-rounded is-outlined " onClick={()=>setViewWallet("0x70e1cB759996a1527eD1801B169621C18a9f38F9")}>View Reserves</button>
                   <button className="button is-primary is-rounded is-outlined " onClick={()=>setViewWallet(account)}>View Yours</button>
                   <button className="button is-primary is-rounded is-outlined " onClick={()=>setViewWallet("")}>View All</button>

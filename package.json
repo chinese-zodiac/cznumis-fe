@@ -22,6 +22,7 @@
     "bulma": "^0.9.3",
     "bulma-accordion": "^2.0.1",
     "classnames": "^2.2.6",
+    "ethcall": "^4.4.0",
     "lodash": "^4.17.21",
     "next": "^12.1.0",
     "node-sass": "^7.0.1",

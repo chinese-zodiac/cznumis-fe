@@ -11,13 +11,21 @@ const gateways = [
 ]
 
 export const getIpfsUrl = (sourceUrl,cycle=0) => {
+    //console.log('gateway',gateways[cycle%gateways.length])
     return gatewayTools.convertToDesiredGateway(sourceUrl, gateways[cycle%gateways.length]);
 }
 
 let cycle = 0;
 export const getIpfsJson = memoize(async (sourceUrl) => {
+    let s = window.localStorage;
+    //let item = s.getItem(sourceUrl);
+    //if(item != null) return item;
+
     cycle++;
-    return (await fetchRetry(
+    let result = await fetchRetry(
         getIpfsUrl(sourceUrl, cycle)
-    )).json();
+    );
+    let item = await result.json();
+    s.setItem(sourceUrl,JSON.stringify(item));
+    return item;
 })

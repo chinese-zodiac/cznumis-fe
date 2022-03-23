@@ -1,32 +1,51 @@
 import { memoize } from 'lodash';
-import { Contract, utils, BigNumber} from "ethers";
+import { Contract, Provider} from "ethcall";
+import { utils, BigNumber} from "ethers";
 import { getIpfsJson } from "./getIpfsJson";
 import USTSDAbi from "../abi/USTSD.json";
 import USTSDPriceOracleAbi from "../abi/USTSDPriceOracle.json";
 import { ADDRESS_USTSD, ADDRESS_USTSD_PRICE_ORACLE } from '../constants/addresses';
 const {Interface} = utils;
 
-const getUstsdMetadataSingle = memoize(async (id,USTSD,USTSDPriceOracle) => {
-    try{
-        const results = await Promise.all([
+const epoch = () => {
+    return new Date()/1000;;
+}
+
+const getUstsdMetadataSet = memoize(async (startId,batchSize,multicallProvider,USTSD,USTSDPriceOracle,cb) => {
+    let initEpoch = epoch();
+    let calls = Array(batchSize).fill(null).map((_,i)=>{
+        let id = startId + i;
+        return [
             USTSD.ownerOf(id),
             USTSD.tokenURI(id),
             USTSD.serial(id),
             USTSDPriceOracle.getCoinNftPriceCents(ADDRESS_USTSD,id)
-        ])
-        if(!results[1]) throw new Error("no tokenURI metadata")
-        const ipfsMetadata = await getIpfsJson(results[1]);
-        if(!ipfsMetadata.image) throw new Error("no tokenURI image")
-        return {
-            owner:results[0],
-            tokenURI:results[1],
-            serial:results[2],
-            price:results[3]/100,
-            ...ipfsMetadata
+        ]
+    }).flat(1);
+    try{
+        const multicallResults = await multicallProvider.all(calls);
+        let results = Array(batchSize).fill(null).map((_,i)=>{
+            let o = i*4;
+            if(!multicallResults[o+1]) throw new Error("no tokenURI metadata")
+            return {
+                id:multicallResults+i,
+                owner:multicallResults[o+0],
+                tokenURI:multicallResults[o+1],
+                serial:multicallResults[o+2],
+                price:multicallResults[o+3]/100
+            }
+        });
+        for(let i=0; i<results.length; i++) {
+            let ipfsMetadata = await getIpfsJson(results[i].tokenURI);
+            console.log(ipfsMetadata.image);
+            if(!ipfsMetadata.image) throw new Error("no tokenURI image");
+            results[i] = {...results[i],...ipfsMetadata}
+            cb(i+startId,results[i]);
         }
+        return results;
     } catch(err) {
-        console.log("USTSD",id,"err:",err)
-        return {isErr:true,err:"Failed to load token ID "+id}
+        console.log("USTSD",startId,"err:",err)
+        return {isErr:true,err:"Failed to load token ID "+startId}
     }
 });
 
@@ -36,33 +55,35 @@ export const getUstsdMetadata = ((library,cb) => {
     let isCanceled = false;
     let cancel = () => isCanceled = true;
     (async ()=>{
+        const multicallProvider = new Provider();
+        await multicallProvider.init(library);
         const USTSD = new Contract(
             ADDRESS_USTSD,
-            new Interface(USTSDAbi),
-            library
+            USTSDAbi
         );
         const USTSDPriceOracle = new Contract(
             ADDRESS_USTSD_PRICE_ORACLE,
-            new Interface(USTSDPriceOracleAbi),
-            library
+            USTSDPriceOracleAbi
         );
         let totalSupply;
         try{
-            totalSupply = (await USTSD.totalSupply()).toNumber();
+            totalSupply = (await multicallProvider.all([USTSD.totalSupply()]))[0].toNumber();
         }catch(err){
+            console.log("TotalSupply err:",err)
             return;
         }
         if(isCanceled) return;
-        for(let i = 0; i<totalSupply; i++) {
-            let result = await getUstsdMetadataSingle(i,USTSD,USTSDPriceOracle);
-            if(result.isErr){
-                getUstsdMetadataSingle.cache.delete(i);
-                i--;
+        let increment = 25;
+        for(let i = 0; i<totalSupply; i+=increment) {
+            let batchSize = i+increment<totalSupply ? increment : totalSupply-i;
+            let results = await getUstsdMetadataSet(i,batchSize,multicallProvider,USTSD,USTSDPriceOracle,cb);
+            if(results.isErr){
+                getUstsdMetadataSet.cache.delete(i);
+                i-=increment;
             } else{
-                result.id = i;
-                console.log(result)
-                cb(i,result)
-                await new Promise(r => setTimeout(r, 150*(Math.random()+0.5)));
+                results.forEach((val,j)=>{
+                    cb(i+j,val);
+                })
             }
             if(isCanceled) break;
         }
