@@ -4,10 +4,10 @@ import { memoize, random } from 'lodash';
 
 const gatewayTools = new IPFSGatewayTools();
 const gateways = [
-    "https://ipfs.fleek.co",
-    "https://cloudflare-ipfs.com",
+    //"https://ipfs.fleek.co",
+    //"https://cloudflare-ipfs.com",
     "https://czodiac.mypinata.cloud",
-    "https://gateway.ipfs.io"
+    //"https://gateway.ipfs.io"
 ]
 
 export const getIpfsUrl = (sourceUrl,cycle=0) => {
@@ -18,14 +18,14 @@ export const getIpfsUrl = (sourceUrl,cycle=0) => {
 let cycle = 0;
 export const getIpfsJson = memoize(async (sourceUrl) => {
     let s = window.localStorage;
-    //let item = s.getItem(sourceUrl);
-    //if(item != null) return item;
+    let item = JSON.parse(s.getItem(sourceUrl));
+    if(item != null) return item;
 
     cycle++;
     let result = await fetchRetry(
         getIpfsUrl(sourceUrl, cycle)
     );
-    let item = await result.json();
+    item = await result.json();
     s.setItem(sourceUrl,JSON.stringify(item));
     return item;
 })
