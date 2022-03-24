@@ -8,17 +8,28 @@ import CznumisLogo from '../../public/static/assets/logo.png';
 import "./index.module.scss";
 import {getIpfsUrl} from '../../utils/getIpfsJson';
 import {getUstsdMetadata} from '../../utils/getUstsdMetadata';
-import { useEthers, shortenAddress, useLookupAddress, useChainMeta, useChainState  } from '@usedapp/core'
+import { useEthers, shortenAddress, useCall, useContractFunction, useTokenAllowance  } from '@usedapp/core'
 import { get } from 'lodash';
-import { utils } from 'ethers'
+import { utils, Contract } from 'ethers'
+import CZUSTSDReservesAbi from "../../abi/CZUSTSD_RESERVES.json";
+import USTSDAbi from "../../abi/USTSD.json";
+import USTSDPriceOracleAbi from "../../abi/USTSDPriceOracle.json";
+import { ADDRESS_USTSD, ADDRESS_USTSD_PRICE_ORACLE } from '../../constants/addresses';
+const { formatEther, parseEther, Interface } = utils;
+
 const CZUSD = "0xE68b79e51bf826534Ff37AA9CeE71a3842ee9c70";
+const BUSD = "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56";
 const CZF = "0x7c1608C004F20c3520f70b924E2BfeF092dA0043";
 const CZF_CZUSD_LP = "0x98b5f5e7ec32cda1f3e89936c9972f92296afe47";
 const TWITTER = "https://twitter.com/zodiacs_c";
 const TELEGRAM = "https://t.me/CZodiacofficial";
 const CZUSD_AUTOFARM_STAKE = "https://autofarm.network/bsc/602/";
 const CZUSD_ELLIPSIS_POOL = "https://ellipsis.finance/pool/0";
-const CZODIAC_NFT = "0x6Bf5843b39EB6D5d7ee38c0b789CcdE42FE396b4";
+const RESERVES = "0x099Cd01DBA50C29727852c47E36772fc82462b52";
+
+const czustsdReservesInterface = new Interface(CZUSTSDReservesAbi);
+const ustsdInterface = new Interface(USTSDAbi);
+const ustsdPriceInterface = new Interface(USTSDPriceOracleAbi);
 
 function BackToTop() {
   return(
@@ -38,6 +49,25 @@ function BackToTop() {
   const [nftMetadata,setNftMetadata] = useState([])
   const [loadingNftId,setLoadingNftId] = useState(0);
   const [viewWallet,setViewWallet] = useState("");
+  
+  const {value:totalSupplyUstsd, error:totalSupplyUstsdErr} = useCall({
+      contract: new Contract(ADDRESS_USTSD, ustsdInterface),
+      method: 'totalSupply',
+      args: []
+  }) ?? {}
+  
+  const {value:ustsdIsApproved, error:ustsdIsApprovedErr} = useCall({
+      contract: new Contract(ADDRESS_USTSD, ustsdInterface),
+      method: 'isApprovedForAll',
+      args: [!!account ? account : RESERVES,RESERVES]
+  }) ?? {}
+  
+  const { state: stateUstsdApproval, send: sendUstsdApproval } = useContractFunction(new Contract(ADDRESS_USTSD, ustsdInterface), 'setApprovalForAll');
+
+  const { state: stateBuy, send: sendBuy } = useContractFunction(new Contract(RESERVES, czustsdReservesInterface), 'buy');
+  const { state: stateSell, send: sendSell } = useContractFunction(new Contract(RESERVES, czustsdReservesInterface), 'sell');
+  const busdAllowance = useTokenAllowance(BUSD, account, RESERVES);
+
   useEffect(()=>{
     if(!library) return;
     let cancel = getUstsdMetadata(library,(i,res)=>{
@@ -62,7 +92,7 @@ function BackToTop() {
                     </figure>
                   </a>
                   <p className="title ml-5">CZ Numismatics</p>
-                  <p className="subtitle is-size-6 mr-5 " >Collect rare US coinage with 1:1 backed NFTs. Kept in trust with <a target="_blank" className="is-underlined" href="https://rafalovichcoins.com/nfts">Rafalovich Coins</a> and redeemable.</p>
+                  <p className="subtitle is-size-6 mr-5 " >Collect rare US coinage with 1:1 backed NFTs. Kept in trust with <a target="_blank" className="is-underlined" href="https://rafalovichcoins.com/nfts">Rafalovich Coins</a> and redeemable. Taxes: 0% on buy, 12.5% on sell.</p>
               </div>
               <div className="is-clearfix"></div>
             </div>
@@ -76,13 +106,15 @@ function BackToTop() {
                     }
                   }/><br/>
                   <div className="buttons has-addons mt-3 has-text-centered" style={{display:"inline-block"}}>
-                  <button className="button is-primary is-rounded is-outlined " onClick={()=>setViewWallet("0x70e1cB759996a1527eD1801B169621C18a9f38F9")}>View Reserves</button>
-                  <button className="button is-primary is-rounded is-outlined " onClick={()=>setViewWallet(account)}>View Yours</button>
+                  <button className="button is-primary is-rounded is-outlined " onClick={()=>setViewWallet(RESERVES)}>View Reserves</button>
+                  {!!account && (<button className="button is-primary is-rounded is-outlined " onClick={()=>setViewWallet(account)}>View Yours</button>)}
                   <button className="button is-primary is-rounded is-outlined " onClick={()=>setViewWallet("")}>View All</button>
                   </div><br/>
                 </div>
                 <p>
-                  USTSD Loaded: {loadingNftId+1}
+                  USTSD All: {loadingNftId+1} of {totalSupplyUstsd?.toString()} ({!totalSupplyUstsd ? "0" : (Math.round(100*(loadingNftId+1)/Number(totalSupplyUstsd.toString())))}%)
+                  <br/>
+                  Viewing: {nftMetadata.filter(nft=> !viewWallet ? true : viewWallet.toUpperCase()==nft.owner.toUpperCase()).length}
                 </p>
                 {nftMetadata.filter(nft=> !viewWallet ? true : viewWallet.toUpperCase()==nft.owner.toUpperCase()).map((nft,index)=>{
                   return(<div key={index} className="container m-2" 
@@ -94,7 +126,38 @@ function BackToTop() {
                     </figure>
                   </a>
                   <p className="has-text-left pl-4 pb-2 is-size-7" > ${(nft.price+0.99).toFixed(2)} ID:{nft.id} SN:{nft.serial} <span className='is-underlined' style={{cursor:"pointer"}} onClick={()=>setViewWallet(nft.owner)}>{shortenAddress(nft.owner)}</span>
-                  <br/><button onClick={nft.refresh}>Refresh</button>
+                  <br/>
+                  <button className="button is-small is-primary is-outlined" onClick={nft.refresh}>
+                    <span className="icon pr-1 pt-1">
+                      <i className="fa-solid fa-refresh" style={{position:'relative',top:"-0.1em",left:"0.1em"}}></i>
+                    </span>
+                  </button>
+                  {(nft.owner.toUpperCase()==RESERVES.toUpperCase()) && (<>
+                  <button className="button is-small is-success is-outlined ml-2" onClick={()=>sendBuy([nft.id],0)}>
+                    <span style={{display:"inline-block",top:"2px",left:"0px",position:"relative"}} >
+                      BUY (CZUSD)
+                    </span>
+                  </button>
+                  {false && <button className="button is-small is-success is-outlined ml-2" onClick={()=>sendBuy([nft.id],1)}>
+                    <span style={{display:"inline-block",top:"2px",left:"0px",position:"relative"}} >
+                      BUY (BUSD)
+                    </span>
+                  </button>}
+                  </>)}
+                  {(!!account && nft.owner.toUpperCase()==account.toUpperCase()) && (
+                    (!!ustsdIsApproved && !!ustsdIsApproved[0]) ? (
+                      <button className="button is-small is-info is-outlined ml-2" onClick={()=>sendSell([nft.id])}>
+                        <span style={{display:"inline-block",top:"2px",left:"0px",position:"relative"}} >
+                          SELL
+                        </span>
+                      </button>
+                    ) : (
+                      <button className="button is-small is-info is-outlined ml-2" onClick={()=>sendUstsdApproval(RESERVES,true)}>
+                        <span style={{display:"inline-block",top:"2px",left:"0px",position:"relative"}} >
+                          APPROVE
+                        </span>
+                      </button>
+                  ))}
                   </p>
                 </div>)})}
               </div>
