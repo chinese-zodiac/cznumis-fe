@@ -7,14 +7,15 @@ import { AccountModal } from '../AccountModal'
 import WalletConnectProvider from '@walletconnect/web3-provider'
 
 const Web3ModalButton = () => {
-  const { account, activate, deactivate, chainId } = useEthers()
+  const { account, activate, deactivate, chainId } = useEthers();
 
-  const ens = useLookupAddress()
-  const [showModal, setShowModal] = useState(false)
-  const [activateError, setActivateError] = useState('')
-  const { error } = useEthers()
+  const ens = useLookupAddress();
+  const [showModal, setShowModal] = useState(false);
+  const [activateError, setActivateError] = useState('');
+  const { error } = useEthers();
   useEffect(() => {
     if (error) {
+      console.log(error);
       setActivateError(error.message)
     }
   }, [error])

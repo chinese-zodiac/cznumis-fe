@@ -2,34 +2,35 @@
 import React, { Component, useEffect, useState } from 'react';
 import Collapsibles from '../../components/Collapsibles';
 import Web3ModalButton from '../../components/Web3ModalButton';
+import Footer from '../../components/Footer';
+import CoinCard from '../../components/CoinCard';
 import CzfLogo from '../../public/static/assets/images/czflogo.png';
 import CzusdLogo from '../../public/static/assets/images/czusd.png';
 import CznumisLogo from '../../public/static/assets/logo.png';
 import "./index.module.scss";
 import {getIpfsUrl} from '../../utils/getIpfsJson';
 import {getUstsdMetadata} from '../../utils/getUstsdMetadata';
-import { useEthers, shortenAddress, useCall, useContractFunction, useTokenAllowance  } from '@usedapp/core'
+import { useEthers, shortenAddress, useCall, useContractFunction, useTokenAllowance, useTokenBalance  } from '@usedapp/core'
 import { get } from 'lodash';
 import { utils, Contract } from 'ethers'
 import CZUSTSDReservesAbi from "../../abi/CZUSTSD_RESERVES.json";
 import USTSDAbi from "../../abi/USTSD.json";
 import USTSDPriceOracleAbi from "../../abi/USTSDPriceOracle.json";
-import { ADDRESS_USTSD, ADDRESS_USTSD_PRICE_ORACLE } from '../../constants/addresses';
+import IERC20Abi from "../../abi/IERC20.json";
+import { ADDRESS_USTSD, ADDRESS_USTSD_PRICE_ORACLE, ADDRESS_CZUSD, ADDRESS_BUSD, ADDRESS_CZF, ADDRESS_CZF_CZUSD_LP, ADDRESS_USTSD_RESERVES, ADDRESS_ZERO } from '../../constants/addresses';
+import { SOCIAL_TWITTER, SOCIAL_TELEGRAM, SOCIAL_AUTOFARM_CZUSD, SOCIAL_ELLIPSIS_CZUSD} from '../../constants/social';
 const { formatEther, parseEther, Interface } = utils;
 
-const CZUSD = "0xE68b79e51bf826534Ff37AA9CeE71a3842ee9c70";
-const BUSD = "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56";
-const CZF = "0x7c1608C004F20c3520f70b924E2BfeF092dA0043";
-const CZF_CZUSD_LP = "0x98b5f5e7ec32cda1f3e89936c9972f92296afe47";
-const TWITTER = "https://twitter.com/zodiacs_c";
-const TELEGRAM = "https://t.me/CZodiacofficial";
-const CZUSD_AUTOFARM_STAKE = "https://autofarm.network/bsc/602/";
-const CZUSD_ELLIPSIS_POOL = "https://ellipsis.finance/pool/0";
-const RESERVES = "0x099Cd01DBA50C29727852c47E36772fc82462b52";
+const ADDRESSS_STORAGE_KEY = 'UserWalletAddress';
 
 const czustsdReservesInterface = new Interface(CZUSTSDReservesAbi);
 const ustsdInterface = new Interface(USTSDAbi);
 const ustsdPriceInterface = new Interface(USTSDPriceOracleAbi);
+const IERC20Interface = new Interface(IERC20Abi);
+
+const CONTRACT_BUSD = new Contract(ADDRESS_BUSD,IERC20Interface);
+const CONTRACT_USTSD = new Contract(ADDRESS_USTSD, ustsdInterface);
+const CONTRACT_USTSD_RESERVES = new Contract(ADDRESS_USTSD_RESERVES, czustsdReservesInterface);
 
 function BackToTop() {
   return(
@@ -44,29 +45,38 @@ function BackToTop() {
   )
 }
 
- function Home() {
-  const {account,library,chainId} = useEthers();
+function parseEtherCents(_cents) {
+  console.log(_cents,parseEther(_cents.toString()).div("100"))
+  return parseEther(_cents.toString()).div("100");
+}
+
+
+function Home() {
+  const {account,library,chainId,activateBrowserWallet} = useEthers();
   const [nftMetadata,setNftMetadata] = useState([])
   const [loadingNftId,setLoadingNftId] = useState(0);
   const [viewWallet,setViewWallet] = useState("");
   
   const {value:totalSupplyUstsd, error:totalSupplyUstsdErr} = useCall({
-      contract: new Contract(ADDRESS_USTSD, ustsdInterface),
+      contract: CONTRACT_USTSD,
       method: 'totalSupply',
       args: []
   }) ?? {}
   
   const {value:ustsdIsApproved, error:ustsdIsApprovedErr} = useCall({
-      contract: new Contract(ADDRESS_USTSD, ustsdInterface),
+      contract: CONTRACT_USTSD,
       method: 'isApprovedForAll',
-      args: [!!account ? account : RESERVES,RESERVES]
+      args: [!!account ? account : ADDRESS_ZERO, ADDRESS_USTSD_RESERVES]
   }) ?? {}
   
-  const { state: stateUstsdApproval, send: sendUstsdApproval } = useContractFunction(new Contract(ADDRESS_USTSD, ustsdInterface), 'setApprovalForAll');
+  const { state: stateUstsdApproval, send: sendUstsdApproval } = useContractFunction(CONTRACT_USTSD, 'setApprovalForAll');
 
-  const { state: stateBuy, send: sendBuy } = useContractFunction(new Contract(RESERVES, czustsdReservesInterface), 'buy');
-  const { state: stateSell, send: sendSell } = useContractFunction(new Contract(RESERVES, czustsdReservesInterface), 'sell');
-  const busdAllowance = useTokenAllowance(BUSD, account, RESERVES);
+  const { state: stateBuy, send: sendBuy } = useContractFunction(CONTRACT_USTSD_RESERVES, 'buy');
+  const { state: stateSell, send: sendSell } = useContractFunction(CONTRACT_USTSD_RESERVES, 'sell');
+  const { state: stateBusdApprove, send: sendBusdApprove } = useContractFunction(CONTRACT_BUSD, 'approve');
+  const busdAllowance = useTokenAllowance(ADDRESS_BUSD, account, ADDRESS_USTSD_RESERVES);
+  const busdBalance = useTokenBalance(ADDRESS_BUSD, account);
+  const czusdBalance = useTokenBalance(ADDRESS_CZUSD, account);
 
   useEffect(()=>{
     if(!library) return;
@@ -79,7 +89,21 @@ function BackToTop() {
       setLoadingNftId(i);
     });
     return ()=>cancel();
-  },[chainId,library])
+  },[chainId])
+
+  useEffect(() => {
+    const sessionAddress = localStorage.getItem(ADDRESSS_STORAGE_KEY);
+    if (sessionAddress && !account) {
+      activateBrowserWallet();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (account) {
+      localStorage.setItem(ADDRESSS_STORAGE_KEY, account);
+    }
+  }, [account]);
+
   return (<>
     <section id="top" className="hero is-fullheight has-background-gradient has-text-centered">
         <div>
@@ -106,7 +130,7 @@ function BackToTop() {
                     }
                   }/><br/>
                   <div className="buttons has-addons mt-3 has-text-centered" style={{display:"inline-block"}}>
-                  <button className="button is-primary is-rounded is-outlined " onClick={()=>setViewWallet(RESERVES)}>View Reserves</button>
+                  <button className="button is-primary is-rounded is-outlined " onClick={()=>setViewWallet(ADDRESS_USTSD_RESERVES)}>View Reserves</button>
                   {!!account && (<button className="button is-primary is-rounded is-outlined " onClick={()=>setViewWallet(account)}>View Yours</button>)}
                   <button className="button is-primary is-rounded is-outlined " onClick={()=>setViewWallet("")}>View All</button>
                   </div><br/>
@@ -116,128 +140,21 @@ function BackToTop() {
                   <br/>
                   Viewing: {nftMetadata.filter(nft=> !viewWallet ? true : viewWallet.toUpperCase()==nft.owner.toUpperCase()).length}
                 </p>
-                {nftMetadata.filter(nft=> !viewWallet ? true : viewWallet.toUpperCase()==nft.owner.toUpperCase()).map((nft,index)=>{
-                  return(<div key={index} className="container m-2" 
-                  style={{display:"inline-block",border:"solid #9c968a",background:"white"}}
-                  >
-                  <a href={getIpfsUrl(nft.image,index)} target="_blank">
-                    <figure className="image is-256x256 m-2" style={{width:"256px",display:"inline-block"}}>
-                        <img src={getIpfsUrl(nft.image,index)} />
-                    </figure>
-                  </a>
-                  <p className="has-text-left pl-4 pb-2 is-size-7" > ${(nft.price+0.99).toFixed(2)} ID:{nft.id} SN:{nft.serial} <span className='is-underlined' style={{cursor:"pointer"}} onClick={()=>setViewWallet(nft.owner)}>{shortenAddress(nft.owner)}</span>
-                  <br/>
-                  <button className="button is-small is-primary is-outlined" onClick={nft.refresh}>
-                    <span className="icon pr-1 pt-1">
-                      <i className="fa-solid fa-refresh" style={{position:'relative',top:"-0.1em",left:"0.1em"}}></i>
-                    </span>
-                  </button>
-                  {(nft.owner.toUpperCase()==RESERVES.toUpperCase()) && (<>
-                  <button className="button is-small is-success is-outlined ml-2" onClick={()=>sendBuy([nft.id],0)}>
-                    <span style={{display:"inline-block",top:"2px",left:"0px",position:"relative"}} >
-                      BUY (CZUSD)
-                    </span>
-                  </button>
-                  {false && <button className="button is-small is-success is-outlined ml-2" onClick={()=>sendBuy([nft.id],1)}>
-                    <span style={{display:"inline-block",top:"2px",left:"0px",position:"relative"}} >
-                      BUY (BUSD)
-                    </span>
-                  </button>}
-                  </>)}
-                  {(!!account && nft.owner.toUpperCase()==account.toUpperCase()) && (
-                    (!!ustsdIsApproved && !!ustsdIsApproved[0]) ? (
-                      <button className="button is-small is-info is-outlined ml-2" onClick={()=>sendSell([nft.id])}>
-                        <span style={{display:"inline-block",top:"2px",left:"0px",position:"relative"}} >
-                          SELL
-                        </span>
-                      </button>
-                    ) : (
-                      <button className="button is-small is-info is-outlined ml-2" onClick={()=>sendUstsdApproval(RESERVES,true)}>
-                        <span style={{display:"inline-block",top:"2px",left:"0px",position:"relative"}} >
-                          APPROVE
-                        </span>
-                      </button>
-                  ))}
-                  </p>
-                </div>)})}
+                {nftMetadata.filter(
+                  nft=> !viewWallet ? true : viewWallet.toUpperCase()==nft.owner.toUpperCase()
+                  ).map((nft,index)=><CoinCard key={index} {...nft} sendBuy={sendBuy} sendSell={sendSell} sendUstsdApproval={sendUstsdApproval} sendBusdApprove={sendBusdApprove}
+                    ustsdIsApproved={!!ustsdIsApproved && ustsdIsApproved[0]}
+                    isEnoughBusdAllowance={busdAllowance?.gte(parseEther(nft.price.toString()))}
+                    isEnoughBusd={busdBalance?.gte(parseEther(nft.price.toString()))}
+                    isEnoughCzusd={czusdBalance?.gte(parseEther(nft.price.toString()))}
+                  />)}
               </div>
             </div>
         </div>
     </section>
     
-    <footer id="footer" className="footer is-dark">
-      <div className="content has-text-centered">
-        <div>
-          <a className="m-2 mr-4" href={"https://bscscan.com/token/"+CZF} target="_blank">
-            <figure className="image is-16x16 is-rounded m-0" style={{display:"inline-block",top:"2px",position:"relative"}}>
-                <img src={CzfLogo} />
-            </figure>
-          </a>
-          <a className="m-2 mr-3" href={"https://bscscan.com/token/"+CZUSD} target="_blank">
-            <figure className="image is-16x16 is-rounded m-0" style={{display:"inline-block",top:"2px",position:"relative"}}>
-                <img src={CzusdLogo} />
-            </figure>
-          </a>
-          <a className="m-2" href={TELEGRAM} target="_blank">
-            <span className="icon"><i className="fa-brands fa-telegram"></i></span>
-          </a>
-          <a className="m-2" href={TWITTER} target="_blank">
-            <span className="icon"><i className="fa-brands fa-twitter"></i></span>
-          </a>
-          <a className="m-2" href="https://czodiacs.medium.com/" target="_blank">
-            <span className="icon"><i className="fa-brands fa-medium"></i></span>
-          </a>
-          <a className="m-2" href="https://github.com/chinese-zodiac" target="_blank">
-            <span className="icon"><i className="fa-brands fa-github"></i></span>
-          </a>
-          <a className="m-2" href="https://discord.gg/nzHjq6Vewd" target="_blank">
-            <span className="icon"><i className="fa-brands fa-discord"></i></span>
-          </a>
-          <a className="m-2" href="https://czodiac.gitbook.io/czodiac-litepapper" target="_blank">
-            <span className="icon"><i className="fa-solid fa-book"></i></span>
-          </a>
-        </div>
-        <div className="container has-text-centered ">
-            <a className="button is-rounded m-1 is-small" href="https://cz.cash" target="_blank">
-                <span className="icon">
-                    <i className="fa-solid fa-arrow-right-arrow-left" style={{position:'relative',top:"-0.1em",left:"0.1em"}}></i>
-                </span>
-                <span style={{padding:"0"}}>cz.cash</span>
-            </a>
-            <a className="button is-rounded m-1 is-small" href="https://cz.farm" target="_blank">
-                <span className="icon">
-                    <i className="fa-solid fa-tractor" style={{position:'relative',top:"-0.1em",left:"0.1em"}}></i>
-                </span>
-                <span style={{padding:"0"}}>cz.farm</span>
-            </a>
-            <a className="button is-rounded m-1 is-small" href="https://app.czodiac.com" target="_blank">
-                <span className="icon">
-                    <i className="fa-solid fa-box-archive" style={{position:'relative',top:"-0.1em",left:"0.1em"}}></i>
-                </span>
-                <span style={{padding:"0"}}>v1 dapp</span>
-            </a>
-        </div>
-        <br/>
-        <div>
-          <p>            
-          <strong>Prices</strong><br/>
-            For convenience, all CZodiac treasury prices are set by its on-chain price oracle fed by <a className='is-underline' href="https://www.pcgs.com/prices/detail/morgan-dollar/744/most-active">PCGS</a>. Coins are not PCGS certified unless identified otherwise.
-          </p>
-          <p>
-            <strong>Ownership Rights</strong><br/>
-            Each NFT has a unique serial number representing its documented and graded physical coin held in trust by <a target="_blank" className="is-underlined" href="https://rafalovichcoins.com/nfts">Rafalovich Coins</a>. When you purchase the NFT, you get copyright and redemption rights as set by Rafalovich Coins. The NFTs may be redeemed for the physical coin; to do so, you will need to burn the NFT and pay a handling fee. Contact <a target="_blank" className="is-underlined" href="https://rafalovichcoins.com/">Rafalovich Coins</a> for additional information on redemption and copyright policies.
-          </p>
-          <strong>Legal Disclaimer</strong><br/>
-          <span className="is-size-7">
-            Nothing on this site or on related channels should be considered a promise by anyone, including but not limited to the developers and promoters of this site, to perform work to generate profits for anyone including but not limited to the following: the users of this site; FairTribe community members; CZF holders; CZUSD holders; or anyone using any of the sites, smart contracts, social media channels, and any other media or tech related to CZF, CZUSD, and CZodiac or any of the community members. CZodiac, CZF, CZUSD, czodiac.com, cz.cash, cz.farm, and related technologies plus media are all experimental and must be used according to your personal financial situation and risk profile. There are no guarantees of profits, but the smart contracts are guaranteed to perform as written on the BSC blockchain.
-          </span>
-        </div>
-        <p>
-          <strong>Contact</strong><br/>
-          team@czodiac.com
-        </p>
-      </div>
-    </footer>
+    <Footer />
+    
   </>);
 }
 
