@@ -14,7 +14,7 @@ const BuyCoinModalButton = ({image,id,price,owner,serial,sendBuy,sendBusdApprove
       <button className='button is-small is-success is-outlined ml-2 pt-2' onClick={()=>setIsActive(true)}>BUY</button>
         <div className={"modal "+(isActive && "is-active")}>
         <div class="modal-background"></div>
-        <div className="modal-card" style={{maxWidth:"90vw"}}>
+        <div className="modal-card" style={{maxWidth:"90vw",width:"350px"}}>
         
           <header className="modal-card-head">
             <p className="modal-card-title is-size-5 mt-1">Purchase {serial} for ${(price+0.99).toFixed(2)}</p>
@@ -26,12 +26,14 @@ const BuyCoinModalButton = ({image,id,price,owner,serial,sendBuy,sendBusdApprove
                 <img src={getIpfsUrl(image,id)} />
             </figure>
             </a>
-        <p className="has-text-left pl-4 pb-2 is-size-7" > ${(price+0.99).toFixed(2)} ID:{id} SN:{serial} <span className='is-underlined' style={{cursor:"pointer"}} onClick={()=>setViewWallet(owner)}>{shortenAddress(owner)}</span>
+        <p className="has-text-left pl-4 pb-2 is-size-7" >
+            ${(price+0.99).toFixed(2)} ID:{id} SN:{serial} <span className='is-underlined' style={{cursor:"pointer"}} onClick={()=>setViewWallet(owner)}>{shortenAddress(owner)}</span>
+            <br/><span className='has-text-danger'>{(!isEnoughCzusd && !isEnoughBusd) && "You need more CZUSD or BUSD to purchase."}</span>
         </p>
           </section>
           <footer className="modal-card-foot">
           {isEnoughCzusd ? (
-                <button className="button is-small is-success is-outlined ml-2" onClick={()=>{sendBuy([id],0);setIsActive(false)}}>
+                <button className="button is-success is-outlined ml-2" onClick={()=>{sendBuy([id],0);setIsActive(false)}}>
                 <span style={{display:"inline-block",top:"2px",left:"0px",position:"relative"}} >
                     BUY (CZUSD)
                 </span>

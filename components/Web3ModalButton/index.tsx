@@ -5,7 +5,7 @@ import styled from 'styled-components'
 import Web3Modal from 'web3modal'
 import { AccountModal } from '../AccountModal'
 import WalletConnectProvider from '@walletconnect/web3-provider'
-import { parseEther } from '@ethersproject/units'
+import { parseEther, formatEther } from '@ethersproject/units'
 
 const Web3ModalButton = ({busdBalance,czusdBalance}) => {
   const { account, activate, deactivate, chainId } = useEthers();
@@ -69,8 +69,8 @@ const Web3ModalButton = ({busdBalance,czusdBalance}) => {
         <div className='is-inline-block mt-2 is-size-7' style={{position:"relative"}} onClick={() => setShowModal(!showModal)}>
           {ens ?? shortenAddress(account)}
           <div style={{position:"absolute",right:"0px",width:"50vw",top:"1.1em"}}>
-          {!!busdBalance ? Math.floor(Number(parseEther(busdBalance.toString()))).toFixed(2) : "..."} BUSD 
-          {!!czusdBalance ? " "+Math.floor(Number(parseEther(czusdBalance.toString()))).toFixed(2) : " ..."} CZUSD
+          {!!busdBalance ? Number(formatEther(busdBalance)).toFixed(2) : "..."} BUSD 
+          {!!czusdBalance ? " "+Number(formatEther(czusdBalance)).toFixed(2) : " ..."} CZUSD
           </div>
           </div>
         {chainId && chainId == 56 ? (<div 
