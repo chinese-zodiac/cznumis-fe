@@ -4,6 +4,7 @@ import { SOCIAL_ELLIPSIS_CZUSD} from '../../constants/social';
 import {getIpfsUrl} from '../../utils/getIpfsJson';
 import { constants } from 'ethers'
 import { useEthers, shortenAddress, useCall, useContractFunction, useTokenAllowance  } from '@usedapp/core'
+import BuyCoinModalButton from '../BuyCoinModalButton';
 
 let renderCount = 0;
 
@@ -24,41 +25,7 @@ const CoinCard = memo(({image,id,price,serial,refresh,owner,sendBuy,sendSell,sen
         </span>
         </button>
 
-        {(owner.toUpperCase()==ADDRESS_USTSD_RESERVES.toUpperCase()) && (<>
-            {isEnoughCzusd ? (
-                <button className="button is-small is-success is-outlined ml-2" onClick={()=>sendBuy([id],0)}>
-                <span style={{display:"inline-block",top:"2px",left:"0px",position:"relative"}} >
-                    BUY (CZUSD)
-                </span>
-                </button>
-            ) : (
-                <a className="button is-small is-info is-outlined ml-2" href={SOCIAL_ELLIPSIS_CZUSD} target="_blank">
-                <span style={{display:"inline-block",top:"2px",left:"0px",position:"relative"}} >
-                    GET CZUSD
-                </span>
-                </a>
-            )}
-
-            {(isEnoughBusd && isEnoughBusdAllowance) ? (
-                <button className="button is-small is-success is-outlined ml-2" onClick={()=>sendBuy([id],0)}>
-                <span style={{display:"inline-block",top:"2px",left:"0px",position:"relative"}} >
-                    BUY (BUSD)
-                </span>
-                </button>
-            ) : ((isEnoughBusdAllowance) ? (
-                <a className="button is-small is-info is-outlined ml-2" href={"https://pancakeswap.finance/swap/?outputCurrency="+ADDRESS_BUSD} target="_blank">
-                <span style={{display:"inline-block",top:"2px",left:"0px",position:"relative"}} >
-                    GET BUSD
-                </span>
-                </a>) : (
-                    <button className="button is-small is-info is-outlined ml-2" onClick={()=>sendBusdApprove(ADDRESS_USTSD_RESERVES,constants.MaxUint256)}>
-                    <span style={{display:"inline-block",top:"2px",left:"0px",position:"relative"}} >
-                        APPROVE BUSD
-                    </span>
-                    </button>
-                )
-            )}
-        </>)}
+        {(owner.toUpperCase()==ADDRESS_USTSD_RESERVES.toUpperCase()) && (<BuyCoinModalButton {...{image,id,owner,price,serial,sendBuy,sendBusdApprove,isEnoughBusdAllowance,isEnoughBusd,isEnoughCzusd}} />)}
 
         {(!!account && owner.toUpperCase()==account.toUpperCase()) && (
         (!!ustsdIsApproved) ? (

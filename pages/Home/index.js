@@ -108,7 +108,7 @@ function Home() {
     <section id="top" className="hero is-fullheight has-background-gradient has-text-centered">
         <div>
             <div className="hero-head has-text-left">
-                <Web3ModalButton />
+                <Web3ModalButton busdBalance={busdBalance} czusdBalance={czusdBalance} />
               <div className="mt-3">
                   <a href="https://numis.cz.cash">
                     <figure className="image is-64x64 is-rounded m-0 is-pulled-left ml-5 mr-5 mb-5" style={{display:"inline-block",top:"2px",position:"relative"}}>
