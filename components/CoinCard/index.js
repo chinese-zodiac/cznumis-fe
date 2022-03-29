@@ -1,12 +1,19 @@
 import React, { Component, useEffect, useState, memo } from 'react';
 import { ADDRESS_USTSD_RESERVES, ADDRESS_BUSD} from '../../constants/addresses';
-import { SOCIAL_ELLIPSIS_CZUSD} from '../../constants/social';
+import { SOCIAL_PCGS_CHART_MORGAN, SOCIAL_PCGS_CHART_PEACE} from '../../constants/social';
 import {getIpfsUrl} from '../../utils/getIpfsJson';
 import { constants } from 'ethers'
 import { useEthers, shortenAddress, useCall, useContractFunction, useTokenAllowance  } from '@usedapp/core'
 import BuyCoinModalButton from '../BuyCoinModalButton';
 
 let renderCount = 0;
+
+function priceChartLink(serial) {
+    let year = Number(serial.substr(0,4));
+    let grade = serial.substr(5,2);
+    let baseUrl = year < 1922 ? SOCIAL_PCGS_CHART_MORGAN : SOCIAL_PCGS_CHART_PEACE;
+    return baseUrl + grade;
+}
 
 const CoinCard = memo(({image,id,price,serial,refresh,owner,sendBuy,sendSell,sendBusdApprove,ustsdIsApproved,sendUstsdApproval,isEnoughBusdAllowance,isEnoughBusd,isEnoughCzusd}) => {
     const {account} = useEthers();
@@ -24,6 +31,11 @@ const CoinCard = memo(({image,id,price,serial,refresh,owner,sendBuy,sendSell,sen
             <i className="fa-solid fa-refresh" style={{position:'relative',top:"-0.1em",left:"0.1em"}}></i>
         </span>
         </button>
+        <a class="button ml-2 is-small is-primary is-outlined" href={priceChartLink(serial)} target="_blank">
+            <span class="icon">
+                <i class="fa-solid fa-chart-line"></i>
+            </span>
+        </a>
 
         {(owner.toUpperCase()==ADDRESS_USTSD_RESERVES.toUpperCase()) && (<BuyCoinModalButton {...{image,id,owner,price,serial,sendBuy,sendBusdApprove,isEnoughBusdAllowance,isEnoughBusd,isEnoughCzusd}} />)}
 
