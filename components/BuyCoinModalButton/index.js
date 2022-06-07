@@ -47,7 +47,7 @@ const BuyCoinModalButton = ({image,id,price,owner,serial,sendBuy,sendBusdApprove
             )}
 
             {(isEnoughBusd && isEnoughBusdAllowance) ? (
-                <button className="button is-success is-outlined ml-2" onClick={()=>{sendBuy([id],0);setIsActive(false)}}>
+                <button className="button is-success is-outlined ml-2" onClick={()=>{sendBuy([id],1);setIsActive(false)}}>
                 <span style={{display:"inline-block",top:"2px",left:"0px",position:"relative"}} >
                     BUY (BUSD)
                 </span>
