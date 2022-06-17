@@ -11,7 +11,7 @@ import "./index.module.scss";
 import {getIpfsUrl} from '../../utils/getIpfsJson';
 import {getUstsdMetadata} from '../../utils/getUstsdMetadata';
 import { useEthers, shortenAddress, useCall, useContractFunction, useTokenAllowance, useTokenBalance  } from '@usedapp/core'
-import { get } from 'lodash';
+import { get, set } from 'lodash';
 import { utils, Contract } from 'ethers'
 import CZUSTSDReservesAbi from "../../abi/CZUSTSD_RESERVES.json";
 import USTSDAbi from "../../abi/USTSD.json";
@@ -50,12 +50,18 @@ function parseEtherCents(_cents) {
   return parseEther(_cents.toString()).div("100");
 }
 
+const sortGradeAscending = (a,b)=>a?.serial?.substr(5,2) - b?.serial?.substr(5,2);
+const sortGradeDescending = (a,b)=>b?.serial?.substr(5,2) - a?.serial?.substr(5,2);
+const sortIdAscending = (a,b)=>a?.id - b?.id;
+const sortIdDescending = (a,b)=>b?.id - a?.id;
+
 
 function Home() {
   const {account,library,chainId,activateBrowserWallet} = useEthers();
   const [nftMetadata,setNftMetadata] = useState([])
   const [loadingNftId,setLoadingNftId] = useState(0);
   const [viewWallet,setViewWallet] = useState("");
+  const [sorting,setSorting] = useState(()=>sortIdAscending); //react invokes lambdas
   
   const {value:totalSupplyUstsd, error:totalSupplyUstsdErr} = useCall({
       contract: CONTRACT_USTSD,
@@ -139,10 +145,24 @@ function Home() {
                   USTSD All: {loadingNftId+1} of {totalSupplyUstsd?.toString()} ({!totalSupplyUstsd ? "0" : (Math.round(100*(loadingNftId+1)/Number(totalSupplyUstsd.toString())))}%)
                   <br/>
                   Viewing: {nftMetadata.filter(nft=> !viewWallet ? true : viewWallet.toUpperCase()==nft.owner.toUpperCase()).length}
+                  <br/>
+                  <button classNaume="button is-rounded is-outlined" onClick={()=>{
+                    setSorting(()=>sortGradeAscending);
+                  }}>Sort Grade Ascending</button>
+                  <button classNaume="button is-rounded is-outlined" onClick={()=>{
+                    setSorting(()=>sortGradeDescending);
+                  }}>Sort Grade Descending</button>
+                  <button classNaume="button is-rounded is-outlined" onClick={()=>{
+                    setSorting(()=>sortIdAscending);
+                  }}>Sort ID Ascending</button>
+                  <button classNaume="button is-rounded is-outlined" onClick={()=>{
+                    setSorting(()=>sortIdDescending);
+                  }}>Sort ID Descending</button>
                 </p>
-                {nftMetadata.filter(
-                  nft=> !viewWallet ? true : viewWallet.toUpperCase()==nft.owner.toUpperCase()
-                  ).map((nft,index)=><CoinCard key={index} {...nft} sendBuy={sendBuy} sendSell={sendSell} sendUstsdApproval={sendUstsdApproval} sendBusdApprove={sendBusdApprove}
+                {[].concat(nftMetadata).filter(
+                  nft=> !viewWallet ? true : viewWallet.toUpperCase()==nft.owner.toUpperCase())
+                  .sort(sorting)
+                  .map((nft,index)=><CoinCard key={nft.id} {...nft} sendBuy={sendBuy} sendSell={sendSell} sendUstsdApproval={sendUstsdApproval} sendBusdApprove={sendBusdApprove}
                     ustsdIsApproved={!!ustsdIsApproved && ustsdIsApproved[0]}
                     isEnoughBusdAllowance={busdAllowance?.gte(parseEther(nft.price.toString()))}
                     isEnoughBusd={busdBalance?.gte(parseEther(nft.price.toString()))}
