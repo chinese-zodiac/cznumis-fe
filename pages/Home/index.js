@@ -52,6 +52,8 @@ function parseEtherCents(_cents) {
 
 const sortGradeAscending = (a,b)=>a?.serial?.substr(5,2) - b?.serial?.substr(5,2);
 const sortGradeDescending = (a,b)=>b?.serial?.substr(5,2) - a?.serial?.substr(5,2);
+const sortYearAscending = (a,b)=>a?.serial?.substr(0,4) - b?.serial?.substr(0,4);
+const sortYearDescending = (a,b)=>b?.serial?.substr(0,4) - a?.serial?.substr(0,4);
 const sortIdAscending = (a,b)=>a?.id - b?.id;
 const sortIdDescending = (a,b)=>b?.id - a?.id;
 
@@ -146,18 +148,24 @@ function Home() {
                   <br/>
                   Viewing: {nftMetadata.filter(nft=> !viewWallet ? true : viewWallet.toUpperCase()==nft.owner.toUpperCase()).length}
                   <br/>
-                  <button classNaume="button is-rounded is-outlined" onClick={()=>{
+                  <button className="button is-small is-inline-block is-primary is-outlined m-0" style={{width:"140px"}} onClick={()=>{
                     setSorting(()=>sortGradeAscending);
                   }}>Sort Grade Ascending</button>
-                  <button classNaume="button is-rounded is-outlined" onClick={()=>{
+                  <button className="button is-small is-inline-block is-primary is-outlined m-0 mr-2" style={{width:"140px"}} onClick={()=>{
                     setSorting(()=>sortGradeDescending);
                   }}>Sort Grade Descending</button>
-                  <button classNaume="button is-rounded is-outlined" onClick={()=>{
+                  <button className="button is-small is-inline-block is-primary is-outlined m-0" style={{width:"140px"}} onClick={()=>{
                     setSorting(()=>sortIdAscending);
                   }}>Sort ID Ascending</button>
-                  <button classNaume="button is-rounded is-outlined" onClick={()=>{
+                  <button className="button is-small is-inline-block is-primary is-outlined m-0 mr-2" style={{width:"140px"}} onClick={()=>{
                     setSorting(()=>sortIdDescending);
                   }}>Sort ID Descending</button>
+                  <button className="button is-small is-inline-block is-primary is-outlined m-0" style={{width:"140px"}} onClick={()=>{
+                    setSorting(()=>sortYearAscending);
+                  }}>Sort Year Ascending</button>
+                  <button className="button is-small is-inline-block is-primary is-outlined m-0 mr-2" style={{width:"140px"}} onClick={()=>{
+                    setSorting(()=>sortYearDescending);
+                  }}>Sort Year Descending</button>
                 </p>
                 {[].concat(nftMetadata).filter(
                   nft=> !viewWallet ? true : viewWallet.toUpperCase()==nft.owner.toUpperCase())
