@@ -146,7 +146,9 @@ function Home() {
                 <p>
                   USTSD All: {loadingNftId+1} of {totalSupplyUstsd?.toString()} ({!totalSupplyUstsd ? "0" : (Math.round(100*(loadingNftId+1)/Number(totalSupplyUstsd.toString())))}%)
                   <br/>
-                  Viewing: {nftMetadata.filter(nft=> !viewWallet ? true : viewWallet.toUpperCase()==nft.owner.toUpperCase()).length}
+                  Viewing:&nbsp;
+                  {nftMetadata.filter(nft=> !viewWallet ? true : viewWallet.toUpperCase()==nft.owner.toUpperCase()).length}&nbsp;
+                  (${nftMetadata.filter(nft=> !viewWallet ? true : viewWallet.toUpperCase()==nft.owner.toUpperCase()).reduce((prev,curr)=>prev+curr.price+0.99,0).toFixed(2)})
                   <br/>
                   <button className="button is-small is-inline-block is-primary is-outlined m-0" style={{width:"140px"}} onClick={()=>{
                     setSorting(()=>sortGradeAscending);
