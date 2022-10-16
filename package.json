@@ -1,7 +1,7 @@
 {
   "name": "cznumis-fe",
   "version": "1.0.0",
-  "homepage": ".",
+  "homepage": "./",
   "description": "Antique coin NFTs, fully backed and redeemable 1:1",
   "license": "GPL-3.0",
   "scripts": {
