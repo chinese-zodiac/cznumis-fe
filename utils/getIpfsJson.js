@@ -10,22 +10,22 @@ const gateways = [
     //"https://gateway.ipfs.io"
 ]
 
-export const getIpfsUrl = (sourceUrl,cycle=0) => {
+export const getIpfsUrl = (sourceUrl, cycle = 0) => {
     //console.log('gateway',gateways[cycle%gateways.length])
-    return gatewayTools.convertToDesiredGateway(sourceUrl, gateways[cycle%gateways.length]);
+    return gatewayTools.convertToDesiredGateway(sourceUrl, gateways[cycle % gateways.length]);
 }
 
 let cycle = 0;
 export const getIpfsJson = memoize(async (sourceUrl) => {
     let s = window.localStorage;
     let item = JSON.parse(s.getItem(sourceUrl));
-    if(item != null) return item;
+    if (item != null) return item;
 
     cycle++;
     let result = await fetchRetry(
         getIpfsUrl(sourceUrl, cycle)
     );
     item = await result.json();
-    s.setItem(sourceUrl,JSON.stringify(item));
+    s.setItem(sourceUrl, JSON.stringify(item));
     return item;
 })

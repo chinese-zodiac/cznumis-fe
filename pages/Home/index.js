@@ -92,6 +92,7 @@ function Home() {
       setNftMetadata((prevNftMetadata) => {
         let newNftMetadata = [...prevNftMetadata]
         newNftMetadata[i] = res;
+        console.log({ newNftMetadata })
         return newNftMetadata;
       });
       setLoadingNftId(i);
@@ -172,7 +173,7 @@ function Home() {
             {[].concat(nftMetadata).filter(
               nft => !viewWallet ? true : viewWallet.toUpperCase() == nft.owner.toUpperCase())
               .sort(sorting)
-              .map((nft, index) => <CoinCard key={nft.id} {...nft} sendBuy={sendBuy} sendSell={sendSell} sendUstsdApproval={sendUstsdApproval} sendBusdApprove={sendBusdApprove}
+              .map((nft, index) => <CoinCard key={nft.id} {...nft} sendBuy={sendBuy} sendSell={sendSell} sendUstsdApproval={sendUstsdApproval} sendBusdApprove={sendBusdApprove} setViewWallet={setViewWallet}
                 ustsdIsApproved={!!ustsdIsApproved && ustsdIsApproved[0]}
                 isEnoughBusdAllowance={busdAllowance?.gte(parseEther(nft.price.toString()))}
                 isEnoughBusd={busdBalance?.gte(parseEther(nft.price.toString()))}
