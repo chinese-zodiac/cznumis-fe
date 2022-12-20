@@ -24,7 +24,7 @@ const CoinCard = memo(({ image, id, price, serial, refresh, owner, sendBuy, send
                     <img src={getIpfsUrl(image, id)} />
                 </figure>
             </a>
-            <p className="has-text-left pl-4 pb-2 is-size-7" > ${(price + 0.99).toFixed(2)} ID:{id} SN:{serial} <span className='is-underlined' style={{ cursor: "pointer" }} onClick={() => setViewWallet(owner)}>{shortenAddress(owner)}</span>
+            <p className="has-text-left pl-4 pb-2 is-size-7" > ${(price + 4.99).toFixed(2)} ID:{id} SN:{serial} <span className='is-underlined' style={{ cursor: "pointer" }} onClick={() => setViewWallet(owner)}>{shortenAddress(owner)}</span>
                 <br />
                 <button className="button is-small is-primary is-outlined" onClick={refresh}>
                     <span className="icon pr-1 pt-1">

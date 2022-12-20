@@ -149,7 +149,7 @@ function Home() {
               <br />
               Viewing:&nbsp;
               {nftMetadata.filter(nft => !viewWallet ? true : viewWallet.toUpperCase() == nft.owner.toUpperCase()).length}&nbsp;
-              (${nftMetadata.filter(nft => !viewWallet ? true : viewWallet.toUpperCase() == nft.owner.toUpperCase()).reduce((prev, curr) => prev + curr.price + 0.99, 0).toFixed(2)})
+              (${nftMetadata.filter(nft => !viewWallet ? true : viewWallet.toUpperCase() == nft.owner.toUpperCase()).reduce((prev, curr) => prev + curr.price + 4.99, 0).toFixed(2)})
               <br />
               <button className="button is-small is-inline-block is-primary is-outlined m-0" style={{ width: "140px" }} onClick={() => {
                 setSorting(() => sortGradeAscending);
