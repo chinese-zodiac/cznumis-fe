@@ -1,16 +1,73 @@
 import React from 'react';
 import { ADDRESS_CZF, ADDRESS_CZUSD } from '../../constants/addresses';
-import { SOCIAL_TELEGRAM, SOCIAL_TWITTER } from '../../constants/social';
+import { LINK_PRIVACY_POLICY, LINK_TERMS_OF_USE, SOCIAL_TELEGRAM, SOCIAL_TWITTER } from '../../constants/social';
 import CzfLogo from '../../public/static/assets/images/czflogo.png';
 import CzusdLogo from '../../public/static/assets/images/czusd.png';
 
 function Footer() {
   return (<footer id="footer" className="footer is-dark">
     <div className="content has-text-centered">
-      <div>
+      <div style={{ maxWidth: '720px', marginLeft: 'auto', marginRight: 'auto', marginTop: '100px' }}>
+        <h1 style={{ fontSize: "2em" }}>Terms of Use</h1>
+        <p>
+          By accessing any CZODIAC website, including but not limited to
+          CZODIAC's decentralized applications and services, and engaging
+          in any activities related to the CZODIAC ecosystem, including
+          buying, selling, trading, holding CZODIAC tokens, or
+          participating in the CZODIAC community, users acknowledge that
+          they have read, understood, and agreed to be bound by the terms
+          and conditions set forth in CZODIAC's Terms of Use. The Terms of
+          Use, available at{' '}
+          <a style={{ color: 'darkgoldenrod' }} href={LINK_TERMS_OF_USE}>
+            {LINK_TERMS_OF_USE}
+          </a>
+          , constitute a legally binding agreement between users and
+          CZODIAC, and users should review them carefully before engaging
+          in any activities related to the CZODIAC ecosystem. If users do
+          not agree to the terms and conditions set forth in the Terms of
+          Use, they should not access or use CZODIAC's websites, dapps,
+          tokens, or other offerings. By using any CZODIAC website, users
+          represent and warrant that they have the legal capacity to enter
+          into a binding agreement with CZODIAC and that they comply with
+          all applicable laws and regulations.
+          <br />
+          <br />
+          <a style={{ color: 'darkgoldenrod' }} href={LINK_TERMS_OF_USE}>
+            LINK TO TERMS OF USE
+          </a>
+        </p>
+        <br />
+        <h1 style={{ fontSize: "2em" }}>Privacy Policy</h1>
+        <p>
+          At CZODIAC, we are committed to protecting the privacy and
+          personal information of our users. We encourage you to read our
+          Privacy Policy, which can be found at{' '}
+          <a style={{ color: 'darkgoldenrod' }} href={LINK_PRIVACY_POLICY}>
+            {LINK_PRIVACY_POLICY}
+          </a>
+          . This policy outlines the types of personal information that
+          CZODIAC may collect, the purposes for which this information is
+          used, and the steps taken to ensure the security and
+          confidentiality of your personal data. By using CZODIAC's
+          websites or services, you acknowledge that you have read and
+          understood our Privacy Policy and consent to the collection,
+          use, and disclosure of your personal information as described
+          therein. If you have any questions or concerns about our privacy
+          practices, please contact us at team@czodiac.com.
+          <br />
+          <br />
+          <a style={{ color: 'darkgoldenrod' }} href={LINK_PRIVACY_POLICY}>
+            LINK TO PRIVACY POLICY
+          </a>
+        </p>
 
-        <h1 style={{ maxWidth: '720px', marginLeft: 'auto', marginRight: 'auto' }}>Persons under US Jurisdiction must not use NUMIS.CZ.CASH or other CZODIAC dapps, tokens, or services.</h1>
-        <p style={{ maxWidth: '720px', marginLeft: 'auto', marginRight: 'auto', marginBottom: '5em' }}>All persons under US jurisdiction must not use CZODIAC dapps, tokens, or services. It is your responsibility to determine if you are under US jurisdiction and remove yourself from the project as czodiac does not have the capability to do so.</p>
+        <br />
+        <p>
+          <b>CONTACT</b><br />
+          <small>
+            team@czodiac.com
+          </small>
+        </p>
       </div>
       <div>
         <a className="m-2 mr-4" href={"https://bscscan.com/token/" + ADDRESS_CZF} target="_blank">
