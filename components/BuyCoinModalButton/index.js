@@ -17,7 +17,7 @@ const BuyCoinModalButton = ({ image, id, price, owner, serial, sendBuy, sendBusd
             <div className="modal-card" style={{ maxWidth: "90vw", width: "350px" }}>
 
                 <header className="modal-card-head">
-                    <p className="modal-card-title is-size-5 mt-1">Purchase {serial} for ${(price + 4.99).toFixed(2)}</p>
+                    <p className="modal-card-title is-size-5 mt-1">Purchase {serial} for ${(price + 0.99).toFixed(2)}</p>
                     <button className="delete" aria-label="close" onClick={() => setIsActive(false)}></button>
                 </header>
                 <section className="modal-card-body">
@@ -27,7 +27,7 @@ const BuyCoinModalButton = ({ image, id, price, owner, serial, sendBuy, sendBusd
                         </figure>
                     </a>
                     <p className="has-text-left pl-4 pb-2 is-size-7" >
-                        ${(price + 4.99).toFixed(2)} ID:{id} SN:{serial} <span className='is-underlined' style={{ cursor: "pointer" }} onClick={() => setViewWallet(owner)}>{shortenAddress(owner)}</span>
+                        ${(price + 0.99).toFixed(2)} ID:{id} SN:{serial} <span className='is-underlined' style={{ cursor: "pointer" }} onClick={() => setViewWallet(owner)}>{shortenAddress(owner)}</span>
                         <br /><span className='has-text-danger'>{(!isEnoughCzusd && !isEnoughBusd) && "You need more CZUSD or BUSD to purchase."}</span>
                     </p>
                 </section>

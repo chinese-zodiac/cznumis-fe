@@ -1,24 +1,18 @@
 
-import React, { Component, useEffect, useState } from 'react';
-import Collapsibles from '../../components/Collapsibles';
-import Web3ModalButton from '../../components/Web3ModalButton';
-import Footer from '../../components/Footer';
-import CoinCard from '../../components/CoinCard';
-import CzfLogo from '../../public/static/assets/images/czflogo.png';
-import CzusdLogo from '../../public/static/assets/images/czusd.png';
-import CznumisLogo from '../../public/static/assets/logo.png';
-import "./index.module.scss";
-import { getIpfsUrl } from '../../utils/getIpfsJson';
-import { getUstsdMetadata } from '../../utils/getUstsdMetadata';
-import { useEthers, shortenAddress, useCall, useContractFunction, useTokenAllowance, useTokenBalance } from '@usedapp/core'
-import { get, set } from 'lodash';
-import { utils, Contract } from 'ethers'
+import { useCall, useContractFunction, useEthers, useTokenAllowance, useTokenBalance } from '@usedapp/core';
+import { Contract, utils } from 'ethers';
+import React, { useEffect, useState } from 'react';
 import CZUSTSDReservesAbi from "../../abi/CZUSTSD_RESERVES.json";
+import IERC20Abi from "../../abi/IERC20.json";
 import USTSDAbi from "../../abi/USTSD.json";
 import USTSDPriceOracleAbi from "../../abi/USTSDPriceOracle.json";
-import IERC20Abi from "../../abi/IERC20.json";
-import { ADDRESS_USTSD, ADDRESS_USTSD_PRICE_ORACLE, ADDRESS_CZUSD, ADDRESS_BUSD, ADDRESS_CZF, ADDRESS_CZF_CZUSD_LP, ADDRESS_USTSD_RESERVES, ADDRESS_ZERO } from '../../constants/addresses';
-import { SOCIAL_TWITTER, SOCIAL_TELEGRAM, SOCIAL_AUTOFARM_CZUSD, SOCIAL_ELLIPSIS_CZUSD } from '../../constants/social';
+import CoinCard from '../../components/CoinCard';
+import Footer from '../../components/Footer';
+import Web3ModalButton from '../../components/Web3ModalButton';
+import { ADDRESS_BUSD, ADDRESS_CZUSD, ADDRESS_USTSD, ADDRESS_USTSD_RESERVES, ADDRESS_ZERO } from '../../constants/addresses';
+import CznumisLogo from '../../public/static/assets/logo.png';
+import { getUstsdMetadata } from '../../utils/getUstsdMetadata';
+import "./index.module.scss";
 const { formatEther, parseEther, Interface } = utils;
 
 const ADDRESSS_STORAGE_KEY = 'UserWalletAddress';
@@ -125,7 +119,7 @@ function Home() {
               </figure>
             </a>
             <p className="title ml-5">CZ Numismatics</p>
-            <p className="subtitle is-size-6 mr-5 " >Collect rare US coinage with 1:1 backed NFTs. Kept in trust with <a target="_blank" className="is-underlined" href="https://rafalovichcoins.com/nfts">Rafalovich Coins</a> and redeemable. Taxes: 0% on buy, 12.5% on sell.</p>
+            <p className="subtitle is-size-6 mr-5 " >Collect rare US coinage with 1:1 backed NFTs. Kept in trust with <a target="_blank" className="is-underlined" href="https://rafalovichcoins.com/nfts">Rafalovich Coins</a> and redeemable. Taxes: $0.99 on buy, 5% on sell.</p>
           </div>
           <div className="is-clearfix"></div>
         </div>
@@ -149,7 +143,7 @@ function Home() {
               <br />
               Viewing:&nbsp;
               {nftMetadata.filter(nft => !viewWallet ? true : viewWallet.toUpperCase() == nft.owner.toUpperCase()).length}&nbsp;
-              (${nftMetadata.filter(nft => !viewWallet ? true : viewWallet.toUpperCase() == nft.owner.toUpperCase()).reduce((prev, curr) => prev + curr.price + 4.99, 0).toFixed(2)})
+              (${nftMetadata.filter(nft => !viewWallet ? true : viewWallet.toUpperCase() == nft.owner.toUpperCase()).reduce((prev, curr) => prev + curr.price + 0.99, 0).toFixed(2)})
               <br />
               <button className="button is-small is-inline-block is-primary is-outlined m-0" style={{ width: "140px" }} onClick={() => {
                 setSorting(() => sortGradeAscending);
