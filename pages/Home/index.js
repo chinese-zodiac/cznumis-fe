@@ -86,7 +86,6 @@ function Home() {
       setNftMetadata((prevNftMetadata) => {
         let newNftMetadata = [...prevNftMetadata]
         newNftMetadata[i] = res;
-        console.log({ newNftMetadata })
         return newNftMetadata;
       });
       setLoadingNftId(i);

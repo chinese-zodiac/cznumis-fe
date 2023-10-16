@@ -1,9 +1,9 @@
-import React, { Component, useEffect, useState, memo } from 'react';
-import { ADDRESS_USTSD_RESERVES, ADDRESS_BUSD } from '../../constants/addresses';
+import { shortenAddress, useEthers } from '@usedapp/core';
+import { constants } from 'ethers';
+import React, { useState } from 'react';
+import { ADDRESS_BUSD, ADDRESS_USTSD_RESERVES } from '../../constants/addresses';
 import { SOCIAL_ELLIPSIS_CZUSD } from '../../constants/social';
-import { getIpfsUrl } from '../../utils/getIpfsJson';
-import { constants } from 'ethers'
-import { useEthers, shortenAddress, useCall, useContractFunction, useTokenAllowance } from '@usedapp/core'
+import IpfsImgClickable from '../IpfsImgClickable';
 
 let renderCount = 0;
 
@@ -21,11 +21,7 @@ const BuyCoinModalButton = ({ image, id, price, owner, serial, sendBuy, sendBusd
                     <button className="delete" aria-label="close" onClick={() => setIsActive(false)}></button>
                 </header>
                 <section className="modal-card-body">
-                    <a href={getIpfsUrl(image, id)} target="_blank">
-                        <figure className="image is-256x256 m-2" style={{ width: "256px", display: "inline-block" }}>
-                            <img src={getIpfsUrl(image, id)} />
-                        </figure>
-                    </a>
+                    <IpfsImgClickable ipfsCid={image} className="image is-256x256 m-2" style={{ width: "256px", display: "inline-block" }} />
                     <p className="has-text-left pl-4 pb-2 is-size-7" >
                         ${(price + 0.99).toFixed(2)} ID:{id} SN:{serial} <span className='is-underlined' style={{ cursor: "pointer" }} onClick={() => setViewWallet(owner)}>{shortenAddress(owner)}</span>
                         <br /><span className='has-text-danger'>{(!isEnoughCzusd && !isEnoughBusd) && "You need more CZUSD or BUSD to purchase."}</span>

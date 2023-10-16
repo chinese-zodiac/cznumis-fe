@@ -1,13 +1,13 @@
 import IPFSGatewayTools from '@pinata/ipfs-gateway-tools/dist/node';
-import fetchRetry from './fetchRetry';
-import { memoize, random } from 'lodash';
+import { memoize } from 'lodash';
 
 const gatewayTools = new IPFSGatewayTools();
 const gateways = [
-    //"https://ipfs.fleek.co",
-    //"https://cloudflare-ipfs.com",
+    "https://ipfs.czodiac.com",
     "https://czodiac.mypinata.cloud",
-    //"https://gateway.ipfs.io"
+    "https://ipfs.fleek.co",
+    "https://cloudflare-ipfs.com",
+    "https://gateway.ipfs.io"
 ]
 
 export const getIpfsUrl = (sourceUrl, cycle = 0) => {
@@ -15,17 +15,24 @@ export const getIpfsUrl = (sourceUrl, cycle = 0) => {
     return gatewayTools.convertToDesiredGateway(sourceUrl, gateways[cycle % gateways.length]);
 }
 
-let cycle = 0;
 export const getIpfsJson = memoize(async (sourceUrl) => {
     let s = window.localStorage;
     let item = JSON.parse(s.getItem(sourceUrl));
     if (item != null) return item;
 
-    cycle++;
-    let result = await fetchRetry(
-        getIpfsUrl(sourceUrl, cycle)
-    );
-    item = await result.json();
+    let cycle = 0;
+    let isLoading = true;
+    while (isLoading) {
+        try {
+            let result = await fetch(
+                getIpfsUrl(sourceUrl, cycle)
+            );
+            item = await result.json();
+            isLoading = false;
+        } catch {
+            cycle++;
+        }
+    }
     s.setItem(sourceUrl, JSON.stringify(item));
     return item;
 })

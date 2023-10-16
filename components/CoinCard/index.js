@@ -1,10 +1,9 @@
-import React, { Component, useEffect, useState, memo } from 'react';
-import { ADDRESS_USTSD_RESERVES, ADDRESS_BUSD } from '../../constants/addresses';
+import { shortenAddress, useEthers } from '@usedapp/core';
+import React, { memo } from 'react';
+import { ADDRESS_USTSD_RESERVES } from '../../constants/addresses';
 import { SOCIAL_PCGS_CHART_MORGAN, SOCIAL_PCGS_CHART_PEACE } from '../../constants/social';
-import { getIpfsUrl } from '../../utils/getIpfsJson';
-import { constants } from 'ethers'
-import { useEthers, shortenAddress, useCall, useContractFunction, useTokenAllowance } from '@usedapp/core'
 import BuyCoinModalButton from '../BuyCoinModalButton';
+import IpfsImgClickable from '../IpfsImgClickable';
 
 let renderCount = 0;
 
@@ -19,11 +18,8 @@ const CoinCard = memo(({ image, id, price, serial, refresh, owner, sendBuy, send
     const { account } = useEthers();
     return (
         <div className="container m-2" style={{ display: "inline-block", border: "solid #9c968a", background: "white" }}>
-            <a href={getIpfsUrl(image, id)} target="_blank">
-                <figure className="image is-256x256 m-2" style={{ width: "256px", display: "inline-block" }}>
-                    <img src={getIpfsUrl(image, id)} />
-                </figure>
-            </a>
+
+            <IpfsImgClickable ipfsCid={image} className="image is-256x256 m-2" style={{ width: "256px", display: "inline-block" }} />
             <p className="has-text-left pl-4 pb-2 is-size-7" > ${(price + 0.99).toFixed(2)} ID:{id} SN:{serial} <span className='is-underlined' style={{ cursor: "pointer" }} onClick={() => setViewWallet(owner)}>{shortenAddress(owner)}</span>
                 <br />
                 <button className="button is-small is-primary is-outlined" onClick={refresh}>
