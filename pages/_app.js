@@ -11,7 +11,7 @@ import '../styles/styles.scss';
 const config = {
   readOnlyChainId: BSC.chainId,
   readOnlyUrls: {
-    [BSC.chainId]: 'https://bscrpc.com'
+    [BSC.chainId]: 'https://bsc-dataseed.binance.org'
   },
   networks:[BSC]
 }
@@ -61,7 +61,7 @@ class MyApp extends App {
 
 
           </Head>
-          <Component {...pageProps} />=
+          <Component {...pageProps} />
       </DAppProvider>
     );
   }

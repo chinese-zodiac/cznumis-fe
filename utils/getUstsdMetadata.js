@@ -42,7 +42,7 @@ const resetUstsdMetadataSingleFunc = (id, multicallProvider, cb) => {
             getIpfsJson.cache.delete(result.tokenURI)
             window.localStorage.removeItem(result.tokenURI);
             let ipfsMetadata = await getIpfsJson(result.tokenURI);
-            if (!ipfsMetadata.image) throw new Error("no tokenURI image");
+            if (!ipfsMetadata || !ipfsMetadata.image) throw new Error("no tokenURI image");
             result = { ...result, ...ipfsMetadata, refresh: resetUstsdMetadataSingleFunc(id, multicallProvider, cb) }
             cb(id, result);
         } catch (err) {
@@ -78,7 +78,7 @@ const getUstsdMetadataSet = memoize(async (startId, batchSize, multicallProvider
         });
         for (let i = 0; i < results.length; i++) {
             let ipfsMetadata = await getIpfsJson(results[i].tokenURI);
-            if (!ipfsMetadata.image) throw new Error("no tokenURI image");
+            if (!ipfsMetadata || !ipfsMetadata.image) throw new Error("no tokenURI image");
             results[i] = { ...results[i], ...ipfsMetadata, refresh: resetUstsdMetadataSingleFunc(results[i].id, multicallProvider, cb) }
             cb(i + startId, results[i]);
         }
